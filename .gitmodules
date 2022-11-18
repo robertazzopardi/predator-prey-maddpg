@@ -1,0 +1,3 @@
+[submodule "lib/robosimcpp"]
+	path = lib/robosimcpp
+	url = https://github.com/robertazzopardi/robosimcpp.git

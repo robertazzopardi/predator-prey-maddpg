@@ -1,8 +1,8 @@
 #ifndef __PREY_H__
 #define __PREY_H__
 
-#include "./action.h"
-#include "./agent.h"
+#include "action.h"
+#include "agent.h"
 #include <ATen/core/TensorBody.h>
 #include <random>
 

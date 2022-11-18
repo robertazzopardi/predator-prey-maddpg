@@ -3,8 +3,8 @@
 #include "direction.h"
 #include "env.h"
 #include "models.h"
-#include <Colour.h>
-#include <EnvController.h>
+#include <robosim/Colour.h>
+#include <robosim/EnvController.h>
 #include <algorithm>
 #include <iostream>
 #include <sys/cdefs.h>

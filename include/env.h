@@ -1,50 +1,45 @@
-/**
- * @file SimulatedRobot.cpp
- * @author Robert Azzopardi-Yashi (robertazzopardi@icloud.com)
- * @brief
- * @version 0.1
- * @date 2021-07-07
- *
- * @copyright Copyright (c) 2021
- *
- */
+#pragma once
 
-#ifndef __ENV_H__
-#define __ENV_H__
-
-#include <EnvController.h>
+#include "robosim/EnvController.h"
+#include <memory>
+#include <stdint.h>
 #include <tuple>
 #include <vector>
 
-namespace at {
+namespace at
+{
 class Tensor;
 }
 
-namespace env {
+namespace env
+{
 
-enum class Mode { TRAIN, EVAL };
+enum class Mode
+{
+    TRAIN,
+    EVAL
+};
+
 extern enum Mode mode;
 
-constexpr static auto GRID_SIZE = 5;
-constexpr static auto BATCH_SIZE = 64;
+constexpr static uint32_t GRID_SIZE = 5;
+constexpr static uint32_t BATCH_SIZE = 64;
 
-static inline auto getEnvSize() {
-    return static_cast<int>(GRID_SIZE) * robosim::envcontroller::getCellWidth();
+static inline uint32_t getEnvSize(const robosim::envcontroller::EnvController &env)
+{
+    return GRID_SIZE * env.getCellWidth();
 }
 
-static constexpr auto hunterCount = 4;
-static constexpr auto preyCount = 1;
-static constexpr auto agentCount = hunterCount + preyCount;
+static constexpr uint32_t hunterCount = 4;
+static constexpr uint32_t preyCount = 1;
+static constexpr uint32_t agentCount = hunterCount + preyCount;
 
 std::vector<at::Tensor> reset();
 
-bool isSamePosition(robosim::envcontroller::RobotPtr);
+bool isSamePosition(const std::shared_ptr<robosim::robotmonitor::RobotMonitor> &);
 
-std::tuple<std::vector<at::Tensor>, std::vector<float>, bool>
-    step(std::vector<float>);
+std::tuple<std::vector<at::Tensor>, std::vector<float>, bool> step(std::vector<float>);
 
 int getRandomPos();
 
-}  // namespace env
-
-#endif  // !__ENV_H__
+} // namespace env

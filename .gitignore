@@ -104,3 +104,4 @@ Temporary Items
 .history/
 
 !Makefile
+.cache/

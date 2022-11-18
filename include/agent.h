@@ -1,49 +1,55 @@
 #ifndef __AGENT_H__
 #define __AGENT_H__
 
-#include "./direction.h"
-#include "./env.h"
-#include <RobotMonitor.h>
+#include "direction.h"
+#include "env.h"
 #include <array>
 #include <memory>
 #include <random>
+#include <robosim/RobotMonitor.h>
 #include <torch/nn/modules/loss.h>
 #include <tuple>
 #include <vector>
 
-namespace at {
+namespace at
+{
 class Tensor;
 }
 
-namespace colour {
+namespace colour
+{
 struct Colour;
 }
 
-namespace action {
+namespace action
+{
 enum class Action;
 }
 
-namespace models {
+namespace models
+{
 
-namespace actor {
+namespace actor
+{
 struct Actor;
 }
 
-namespace critic {
+namespace critic
+{
 struct Critic;
 }
 
-}  // namespace models
+} // namespace models
 
-namespace agent {
+namespace agent
+{
 
 using UpdateData =
-    std::tuple<std::vector<float>, std::vector<at::Tensor>,
-               std::array<at::Tensor, env::BATCH_SIZE>,
-               std::array<at::Tensor, env::BATCH_SIZE>,
-               std::array<at::Tensor, env::BATCH_SIZE>, at::Tensor>;
+    std::tuple<std::vector<float>, std::vector<at::Tensor>, std::array<at::Tensor, env::BATCH_SIZE>,
+               std::array<at::Tensor, env::BATCH_SIZE>, std::array<at::Tensor, env::BATCH_SIZE>, at::Tensor>;
 
-class Agent : public robosim::robotmonitor::RobotMonitor {
+class Agent : public robosim::robotmonitor::RobotMonitor
+{
   private:
     int gx;
     int gy;
@@ -55,7 +61,7 @@ class Agent : public robosim::robotmonitor::RobotMonitor {
 
     std::mt19937 mt;
 
-    void run(bool *);
+    void run();
 
     static constexpr auto actionDim = 4;
     static constexpr auto obsDim = env::agentCount << 1;
@@ -87,7 +93,6 @@ class Agent : public robosim::robotmonitor::RobotMonitor {
 
 using AgentPtr = std::shared_ptr<Agent>;
 
-}  // namespace agent
+} // namespace agent
 
-#endif  // !__AGENT_H__
-
+#endif // !__AGENT_H__
