@@ -1,26 +1,31 @@
-#ifndef __HUNTER_H__
-#define __HUNTER_H__
+#pragma once
 
-#include "../include/action.h"  // for Action
-#include "../include/agent.h"
-#include <ATen/core/TensorBody.h>  // for Tensor
-#include <algorithm>               // for uniform_int_distribution
-#include <random>                  // for uniform_real_distribution
+#include "action.h"
+#include "agent.h"
+#include "replayBuffer.h"
+#include "robosim/RobotMonitor.h"
+#include <ATen/core/TensorBody.h>
+#include <algorithm>
+#include <memory>
+#include <random>
 #include <torch/optim/adam.h>
 
-namespace colour {
+namespace colour
+{
 struct Colour;
 }
 
-namespace hunter {
+namespace hunter
+{
 
-class Hunter : public agent::Agent {
-private:
+class Hunter : public agent::Agent
+{
+  private:
     torch::optim::Adam criticOptimiser;
     torch::optim::Adam actorOptimiser;
 
-    static constexpr auto tau = 0.001f;
-    static constexpr auto gamma = 0.99f;
+    static constexpr float tau = 0.001f;
+    static constexpr float gamma = 0.99f;
 
     std::uniform_real_distribution<float> distRand;
 
@@ -28,23 +33,22 @@ private:
 
     float epsilon = 0.95;
 
-public:
-    Hunter(bool, colour::Colour);
+  public:
+    Hunter(bool, colour::Colour, bool *);
 
     float getAction(at::Tensor) override;
 
-    at::Tensor getObservation() override;
+    at::Tensor getObservation(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &,
+                              float) override;
 
-    bool isAtGoal();
+    bool isAtGoal(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &, float);
 
     float getReward(action::Action) override;
+    float getReward(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &, float) override;
 
-    void update(agent::UpdateData) override;
+    void update(const agent::UpdateData &) override;
 
     void updateTarget() override;
 };
 
-}  // namespace hunter
-
-#endif  // !__HUNTER_H__
-
+} // namespace hunter

@@ -1,10 +1,14 @@
 #include "direction.h"
-#include <EnvController.h>
+#include <robosim/EnvController.h>
 
-direction::Direction::Direction(enum Dir dir) : dir(dir) {}
+direction::Direction::Direction(enum Dir dir) : dir(dir)
+{
+}
 
-direction::Direction direction::Direction::fromDegree(int degree) {
-    switch (degree % 360) {
+direction::Direction direction::Direction::fromDegree(int degree)
+{
+    switch (degree % 360)
+    {
     case 0:
         return Direction(Dir::DOWN);
     case 90:
@@ -21,26 +25,30 @@ direction::Direction direction::Direction::fromDegree(int degree) {
     }
 }
 
-int direction::Direction::px(int x) {
-    switch (dir) {
+int direction::Direction::px(int x, float cellWidth) const
+{
+    switch (dir)
+    {
     case Dir::UP:
     case Dir::DOWN:
         return x;
     case Dir::LEFT:
-        return x - robosim::envcontroller::getCellWidth();
+        return x - cellWidth;
     case Dir::RIGHT:
-        return x + robosim::envcontroller::getCellWidth();
+        return x + cellWidth;
     default:
         return 0;
     }
 }
 
-int direction::Direction::py(int y) {
-    switch (dir) {
+int direction::Direction::py(int y, float cellWidth) const
+{
+    switch (dir)
+    {
     case Dir::UP:
-        return y - robosim::envcontroller::getCellWidth();
+        return y - cellWidth;
     case Dir::DOWN:
-        return y + robosim::envcontroller::getCellWidth();
+        return y + cellWidth;
     case Dir::LEFT:
     case Dir::RIGHT:
         return y;

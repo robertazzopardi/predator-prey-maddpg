@@ -1,10 +1,21 @@
 #pragma once
 
-#include "robosim/EnvController.h"
 #include <memory>
 #include <stdint.h>
 #include <tuple>
 #include <vector>
+
+namespace robosim
+{
+namespace robotmonitor
+{
+class RobotMonitor;
+}
+namespace envcontroller
+{
+class EnvController;
+}
+} // namespace robosim
 
 namespace at
 {
@@ -20,26 +31,29 @@ enum class Mode
     EVAL
 };
 
+struct State
+{
+    std::vector<at::Tensor> nextStates;
+    std::vector<float> rewards;
+    bool done;
+};
+
 extern enum Mode mode;
 
 constexpr static uint32_t GRID_SIZE = 5;
 constexpr static uint32_t BATCH_SIZE = 64;
 
-static inline uint32_t getEnvSize(const robosim::envcontroller::EnvController &env)
-{
-    return GRID_SIZE * env.getCellWidth();
-}
+uint32_t getEnvSize(float);
 
 static constexpr uint32_t hunterCount = 4;
 static constexpr uint32_t preyCount = 1;
 static constexpr uint32_t agentCount = hunterCount + preyCount;
 
-std::vector<at::Tensor> reset();
+std::vector<at::Tensor> reset(const robosim::envcontroller::EnvController &);
 
-bool isSamePosition(const std::shared_ptr<robosim::robotmonitor::RobotMonitor> &);
+bool isSamePosition(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &,
+                    const std::shared_ptr<robosim::robotmonitor::RobotMonitor> &);
 
-std::tuple<std::vector<at::Tensor>, std::vector<float>, bool> step(std::vector<float>);
-
-int getRandomPos();
+State step(std::vector<float>, const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &, float);
 
 } // namespace env

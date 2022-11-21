@@ -3,28 +3,28 @@
 #include "direction.h"
 #include "env.h"
 #include "models.h"
-#include <robosim/Colour.h>
-#include <robosim/EnvController.h>
 #include <algorithm>
 #include <iostream>
+#include <memory>
+#include <robosim/Colour.h>
+#include <robosim/EnvController.h>
+#include <robosim/RobotMonitor.h>
 #include <sys/cdefs.h>
 #include <type_traits>
+#include <vector>
 
-agent::Agent::Agent(bool verbose, colour::Colour colour)
-    : robosim::robotmonitor::RobotMonitor(verbose, colour), gx(0), gy(0),
-      MSELoss(), mt(std::random_device {}()) {
+agent::Agent::Agent(bool verbose, colour::Colour colour, bool *running)
+    : robosim::robotmonitor::RobotMonitor(verbose, colour, running), gx(0), gy(0), MSELoss(), mt(std::random_device{}())
+{
 
-    auto criticInputDim = obsDim * env::hunterCount;
-    auto actorInputDim = obsDim;
+    uint32_t criticInputDim = obsDim * env::hunterCount;
+    uint32_t actorInputDim = obsDim;
 
-    critic =
-        std::make_shared<models::critic::Critic>(criticInputDim, actionDim);
-    targetCritic =
-        std::make_shared<models::critic::Critic>(criticInputDim, actionDim);
+    critic = std::make_shared<models::critic::Critic>(criticInputDim, actionDim);
+    targetCritic = std::make_shared<models::critic::Critic>(criticInputDim, actionDim);
 
     actor = std::make_shared<models::actor::Actor>(actorInputDim, actionDim);
-    targetActor =
-        std::make_shared<models::actor::Actor>(actorInputDim, actionDim);
+    targetActor = std::make_shared<models::actor::Actor>(actorInputDim, actionDim);
 
     // for (size_t i = 0; i < critic->parameters().size(); i++) {
     //     targetCritic->parameters().data()[i].copy_(
@@ -38,42 +38,60 @@ agent::Agent::Agent(bool verbose, colour::Colour colour)
     nextAction = action::Action::NOTHING;
 }
 
-void agent::Agent::moveDirection(direction::Direction direction) {
-    auto x = getX();
-    auto y = getY();
+void agent::Agent::moveDirection(const direction::Direction &direction,
+                                 const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &robots,
+                                 float cellWidth)
+{
+    int x = getX();
+    int y = getY();
 
-    if (canMove()) {
-        gx = direction.px(x);
-        gy = direction.py(y);
+    if (canMove(robots, cellWidth))
+    {
+        gx = direction.px(x, cellWidth);
+        gy = direction.py(y, cellWidth);
 
-        if (env::mode == env::Mode::EVAL) {
+        if (env::mode == env::Mode::EVAL)
+        {
             travel();
             // setPose(direction.px(x), direction.py(y), getHeading());
-        } else {
-            setPose(direction.px(x), direction.py(y), getHeading());
+        }
+        else
+        {
+            setPose(direction.px(x, cellWidth), direction.py(y, cellWidth), getHeading());
         }
     }
 }
 
-void agent::Agent::executeAction(action::Action nextAction) {
-    if (nextAction != action::Action::NOTHING) {
-        switch (nextAction) {
+void agent::Agent::executeAction(action::Action nextAction,
+                                 const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &robots,
+                                 float cellWidth)
+{
+    if (nextAction != action::Action::NOTHING)
+    {
+        switch (nextAction)
+        {
         case action::Action::FORWARD:
-            moveDirection(direction::Direction::fromDegree(getHeading()));
+            moveDirection(direction::Direction::fromDegree(getHeading()), robots, cellWidth);
             break;
 
         case action::Action::LEFT:
-            if (env::mode == env::Mode::EVAL) {
+            if (env::mode == env::Mode::EVAL)
+            {
                 rotate(-90);
-            } else {
+            }
+            else
+            {
                 setPose(getX(), getY(), getHeading() - 90);
             }
             break;
 
         case action::Action::RIGHT:
-            if (env::mode == env::Mode::EVAL) {
+            if (env::mode == env::Mode::EVAL)
+            {
                 rotate(90);
-            } else {
+            }
+            else
+            {
                 setPose(getX(), getY(), getHeading() + 90);
             }
             break;
@@ -86,27 +104,37 @@ void agent::Agent::executeAction(action::Action nextAction) {
     }
 }
 
-void agent::Agent::run(bool *running __unused) {
+void agent::Agent::run()
+{
     std::cout << "Starting Robot: " << serialNumber << std::endl;
 }
 
-bool agent::Agent::canMove() {
-    auto dir = direction::Direction::fromDegree(getHeading());
+bool agent::Agent::canMove(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &robots,
+                           float cellWidth)
+{
+    direction::Direction dir = direction::Direction::fromDegree(getHeading());
 
-    auto x = dir.px(getX());
-    auto y = dir.py(getY());
+    int32_t x = dir.px(getX(), cellWidth);
+    int32_t y = dir.py(getY(), cellWidth);
 
-    if (std::any_of(robosim::envcontroller::robots.begin(),
-                    robosim::envcontroller::robots.end(),
-                    [&](const robosim::envcontroller::RobotPtr &r) {
-                        return (r.get() != this) &&
-                               (r->getX() == x && r->getY() == y);
-                    })) {
-        return false;
+    // TODO change to loop
+    // if (std::any_of(env.getRobots().begin(), env.getRobots().end(),
+    //                 [&](const std::shared_ptr<robosim::envcontroller::RobotMonitor> &r) {
+    //                     return (r.get() != this) && (r->getX() == x && r->getY() == y);
+    //                 }))
+    // {
+    //     return false;
+    // }
+
+    for (const auto &robot : robots)
+    {
+        if (robot.get() != this && robot->getX() == x && robot->getY() == y)
+        {
+            return false;
+        }
     }
 
-    auto xOffset = env::getEnvSize() - robosim::envcontroller::getCellWidth();
+    int32_t xOffset = env::getEnvSize(cellWidth) - cellWidth;
 
-    return (x < xOffset && x > robosim::envcontroller::getCellWidth()) &&
-           (y < xOffset && y > robosim::envcontroller::getCellWidth());
+    return (x < xOffset && x > cellWidth) && (y < xOffset && y > cellWidth);
 }

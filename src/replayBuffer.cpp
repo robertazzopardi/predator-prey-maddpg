@@ -2,7 +2,6 @@
 #include "env.h"
 #include <ATen/Functions.h>
 #include <ATen/core/TensorBody.h>
-#include <__tuple>
 #include <algorithm>
 #include <iterator>
 #include <random>
@@ -12,11 +11,13 @@
 
 std::vector<replaybuffer::Experience> replaybuffer::buffer;
 
-void replaybuffer::push(replaybuffer::Experience experience) {
+void replaybuffer::push(const replaybuffer::Experience &experience)
+{
     buffer.push_back(experience);
 }
 
-replaybuffer::Sample replaybuffer::sample() {
+replaybuffer::Sample replaybuffer::sample()
+{
     // std::vector<std::vector<torch::Tensor>> obsBatch(
     //     env::hunterCount, std::vector<torch::Tensor>());
     std::array<std::vector<at::Tensor>, env::hunterCount> obsBatch;
@@ -38,26 +39,27 @@ replaybuffer::Sample replaybuffer::sample() {
     std::array<at::Tensor, env::BATCH_SIZE> globalActionBatch;
 
     std::vector<Experience> batch;
-    std::sample(buffer.begin(), buffer.end(), std::back_inserter(batch),
-                env::BATCH_SIZE, std::mt19937{std::random_device{}()});
+    std::sample(buffer.begin(), buffer.end(), std::back_inserter(batch), env::BATCH_SIZE,
+                std::mt19937{std::random_device{}()});
 
-    for (size_t index = 0; index < batch.size(); index++) {
+    for (size_t index = 0; index < batch.size(); index++)
+    {
+        Experience experience = batch[index];
 
-        auto [state, action, reward, nextState] = batch[index];
-
-        for (int i = 0; i < env::hunterCount; i++) {
-            obsBatch[i].push_back(state[i]);
-            indiviActionBatch[i].push_back(action[i]);
-            indiviRewardBatch[i].push_back(reward[i]);
-            nextObsBatch[i].push_back(nextState[i]);
+        for (size_t i = 0; i < env::hunterCount; i++)
+        {
+            obsBatch[i].push_back(experience.state[i]);
+            indiviActionBatch[i].push_back(experience.action[i]);
+            indiviRewardBatch[i].push_back(experience.reward[i]);
+            nextObsBatch[i].push_back(experience.nextState[i]);
         }
 
         // globalStateBatch.push_back(torch::cat(state));
-        globalStateBatch[index] = at::cat(state);
-        globalActionBatch[index] = torch::tensor(action);
-        globalNextStateBatch[index] = at::cat(nextState);
+        globalStateBatch[index] = at::cat(experience.state);
+        globalActionBatch[index] = torch::tensor(experience.action);
+        globalNextStateBatch[index] = at::cat(experience.nextState);
     }
 
-    return Sample(obsBatch, indiviActionBatch, indiviRewardBatch, nextObsBatch,
-                  globalStateBatch, globalNextStateBatch, globalActionBatch);
+    return Sample{obsBatch,         indiviActionBatch,    indiviRewardBatch, nextObsBatch,
+                  globalStateBatch, globalNextStateBatch, globalActionBatch};
 }

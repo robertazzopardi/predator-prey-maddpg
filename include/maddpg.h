@@ -1,21 +1,34 @@
+#pragma once
 
-#ifndef __MADDPG_H__
-#define __MADDPG_H__
-
+#include <memory>
 #include <vector>
 
-namespace at {
+namespace robosim
+{
+namespace robotmonitor
+{
+class RobotMonitor;
+};
+namespace envcontroller
+{
+class EnvController;
+}
+
+}; // namespace robosim
+
+namespace at
+{
 class Tensor;
 }
 
-namespace maddpg {
+namespace maddpg
+{
 
-std::vector<float> getActions(std::vector<at::Tensor>);
+std::vector<float> getActions(const std::vector<at::Tensor> &,
+                              const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &);
 
-void update();
+void update(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &);
 
-void run(int, int);
+void run(uint32_t, uint32_t, const robosim::envcontroller::EnvController &);
 
 } // namespace maddpg
-
-#endif // !__MADDPG_H__

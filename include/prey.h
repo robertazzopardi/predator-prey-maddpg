@@ -1,38 +1,39 @@
-#ifndef __PREY_H__
-#define __PREY_H__
+#pragma once
 
 #include "action.h"
 #include "agent.h"
 #include <ATen/core/TensorBody.h>
 #include <random>
 
-namespace colour {
+namespace colour
+{
 struct Colour;
 }
 
-namespace prey {
+namespace prey
+{
 
-class Prey : public agent::Agent {
-private:
+class Prey : public agent::Agent
+{
+  private:
     std::uniform_real_distribution<float> dist;
 
-public:
-    Prey(bool, colour::Colour);
+  public:
+    Prey(bool, colour::Colour, bool *);
 
-    bool isTrapped();
+    bool isTrapped(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &, float);
 
     float getAction(at::Tensor) override;
 
-    at::Tensor getObservation() override;
+    at::Tensor getObservation(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &,
+                              float) override;
 
     float getReward(action::Action) override;
+    float getReward(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &, float) override;
 
-    void update(agent::UpdateData) override;
+    void update(const agent::UpdateData &) override;
 
     void updateTarget() override;
 };
 
-}  // namespace prey
-
-#endif  // !__PREY_H__
-
+} // namespace prey

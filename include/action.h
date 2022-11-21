@@ -1,20 +1,25 @@
+#pragma once
 
-#ifndef __ACTION_H__
-#define __ACTION_H__
+namespace action
+{
 
-namespace action {
+enum class Action
+{
+    FORWARD = 0,
+    LEFT = 1,
+    RIGHT = 2,
+    NOTHING = 3
+};
 
-enum class Action { FORWARD = 0, LEFT = 1, RIGHT = 2, NOTHING = 3 };
-
-static const Action ACTIONS[] = {Action::FORWARD, Action::LEFT, Action::RIGHT,
-                                 Action::NOTHING};
+static const Action ACTIONS[] = {Action::FORWARD, Action::LEFT, Action::RIGHT, Action::NOTHING};
 
 // static const auto ACTION_COUNT = sizeof(ACTIONS) / sizeof(*ACTIONS);
-static constexpr auto ACTION_COUNT =
-    sizeof(action::ACTIONS) / sizeof(*action::ACTIONS);
+static constexpr auto ACTION_COUNT = sizeof(action::ACTIONS) / sizeof(*action::ACTIONS);
 
-inline auto toString(Action ac) {
-    switch (ac) {
+inline auto toString(Action ac)
+{
+    switch (ac)
+    {
     case Action::FORWARD:
         return "FORWARD";
 
@@ -44,9 +49,10 @@ inline auto toString(Action ac) {
 //     }
 // }
 
-inline Action getActionFromIndex(int index) { return ACTIONS[index]; }
+inline Action getActionFromIndex(int index)
+{
+    return ACTIONS[index];
+}
 
-}  // namespace action
-
-#endif  // !__ACTION_H__
+} // namespace action
 

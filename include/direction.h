@@ -1,22 +1,32 @@
+#pragma once
 
-#ifndef __DIRECTION_H__
-#define __DIRECTION_H__
+namespace robosim::envcontroller
+{
+class EnvController;
+}
 
-namespace direction {
+namespace direction
+{
 
-enum class Dir { UP, DOWN, LEFT, RIGHT, NONE };
+enum class Dir
+{
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    NONE
+};
 
-struct Direction {
+struct Direction
+{
     enum Dir dir;
 
     Direction(enum Dir);
 
     static Direction fromDegree(int);
 
-    int px(int);
-    int py(int);
+    int px(int, float) const;
+    int py(int, float) const;
 };
 
 } // namespace direction
-
-#endif // !__DIRECTION_H__

@@ -1,8 +1,9 @@
-#ifndef __AGENT_H__
-#define __AGENT_H__
+#pragma once
 
 #include "direction.h"
 #include "env.h"
+#include "replayBuffer.h"
+#include "robosim/EnvController.h"
 #include <array>
 #include <memory>
 #include <random>
@@ -44,9 +45,18 @@ struct Critic;
 namespace agent
 {
 
-using UpdateData =
-    std::tuple<std::vector<float>, std::vector<at::Tensor>, std::array<at::Tensor, env::BATCH_SIZE>,
-               std::array<at::Tensor, env::BATCH_SIZE>, std::array<at::Tensor, env::BATCH_SIZE>, at::Tensor>;
+// using UpdateData =
+//     std::tuple<std::vector<float>, std::vector<at::Tensor>, std::array<at::Tensor, env::BATCH_SIZE>,
+//                std::array<at::Tensor, env::BATCH_SIZE>, std::array<at::Tensor, env::BATCH_SIZE>, at::Tensor>;
+struct UpdateData
+{
+    std::vector<float> indivRewardBatchI;
+    std::vector<at::Tensor> indivObsBatch;
+    std::array<at::Tensor, env::BATCH_SIZE> globalStateBatch;
+    std::array<at::Tensor, env::BATCH_SIZE> globalActionBatch;
+    std::array<at::Tensor, env::BATCH_SIZE> globalNextStateBatch;
+    at::Tensor nextGlobalActions;
+};
 
 class Agent : public robosim::robotmonitor::RobotMonitor
 {
@@ -54,7 +64,8 @@ class Agent : public robosim::robotmonitor::RobotMonitor
     int gx;
     int gy;
 
-    void moveDirection(direction::Direction);
+    void moveDirection(const direction::Direction &,
+                       const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &, float);
 
   protected:
     torch::nn::MSELoss MSELoss;
@@ -63,8 +74,8 @@ class Agent : public robosim::robotmonitor::RobotMonitor
 
     void run();
 
-    static constexpr auto actionDim = 4;
-    static constexpr auto obsDim = env::agentCount << 1;
+    static constexpr uint32_t actionDim = 4;
+    static constexpr uint32_t obsDim = env::agentCount << 1;
 
   public:
     action::Action nextAction;
@@ -74,19 +85,23 @@ class Agent : public robosim::robotmonitor::RobotMonitor
     std::shared_ptr<models::critic::Critic> critic;
     std::shared_ptr<models::critic::Critic> targetCritic;
 
-    Agent(bool, colour::Colour);
+    Agent(bool, colour::Colour, bool *);
 
-    bool canMove();
+    bool canMove(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &, float);
 
-    void executeAction(action::Action);
+    void executeAction(action::Action, const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &,
+                       float);
 
     virtual float getReward(action::Action) = 0;
 
+    virtual float getReward(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &, float) = 0;
+
     virtual float getAction(at::Tensor) = 0;
 
-    virtual at::Tensor getObservation() = 0;
+    virtual at::Tensor getObservation(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &,
+                                      float) = 0;
 
-    virtual void update(UpdateData) = 0;
+    virtual void update(const UpdateData &) = 0;
 
     virtual void updateTarget() = 0;
 };
@@ -94,5 +109,3 @@ class Agent : public robosim::robotmonitor::RobotMonitor
 using AgentPtr = std::shared_ptr<Agent>;
 
 } // namespace agent
-
-#endif // !__AGENT_H__

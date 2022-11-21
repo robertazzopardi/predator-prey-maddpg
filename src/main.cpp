@@ -2,24 +2,25 @@
 #include "hunter.h"
 #include "maddpg.h"
 #include "prey.h"
-#include <Colour.h>
-#include <EnvController.h>
+#include <robosim/robosim.h>
 #include <stdlib.h>
 #include <thread>
 
-using namespace robosim::envcontroller;
+int main(void)
+{
+    robosim::envcontroller::EnvController env(env::GRID_SIZE, env::GRID_SIZE);
 
-int main(void) {
-    makeRobots<hunter::Hunter>(env::hunterCount, colour::OFF_BLACK);
-    makeRobots<prey::Prey>(env::preyCount, colour::OFF_RED);
+    env.makeRobots<hunter::Hunter>(env::hunterCount, 50, colour::OFF_BLACK);
+    env.makeRobots<prey::Prey>(env::preyCount, 50, colour::OFF_RED);
 
-    EnvController(env::GRID_SIZE, env::GRID_SIZE, 50);
+    std::thread maddpg(maddpg::run, 500, 300);
 
-    std::thread th(maddpg::run, 500, 300);
+    // startSimulation();
+    env.run();
 
-    startSimulation();
+    maddpg.join();
 
-    th.join();
+    env.stop();
 
     return EXIT_SUCCESS;
 }

@@ -1,19 +1,21 @@
-
-#ifndef __MODELS_H__
-#define __MODELS_H__
+#pragma once
 
 #include <torch/nn/module.h>
 #include <torch/nn/modules/linear.h>
 
-namespace at {
+namespace at
+{
 class Tensor;
 }
 
-namespace models {
+namespace models
+{
 
-namespace actor {
+namespace actor
+{
 
-struct Actor : torch::nn::Module {
+struct Actor : torch::nn::Module
+{
     Actor(int, int);
 
     torch::nn::Linear fc1{nullptr}, fc2{nullptr}, fc3{nullptr};
@@ -25,9 +27,11 @@ struct Actor : torch::nn::Module {
 
 } // namespace actor
 
-namespace critic {
+namespace critic
+{
 
-struct Critic : torch::nn::Module {
+struct Critic : torch::nn::Module
+{
     Critic(int, int);
 
     // Use one of many "standard library" modules.
@@ -41,4 +45,3 @@ struct Critic : torch::nn::Module {
 
 } // namespace models
 
-#endif // !__MODELS_H__
