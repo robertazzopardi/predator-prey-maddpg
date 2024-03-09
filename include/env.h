@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <stdint.h>
-#include <tuple>
 #include <vector>
 
 namespace robosim

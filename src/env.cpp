@@ -30,12 +30,12 @@ static int getRandomPos(const robosim::envcontroller::EnvController &env)
 }
 } // namespace env
 
-uint32_t getEnvSize(float cellWidth)
+uint32_t env::getEnvSize(float cellWidth)
 {
     return env::GRID_SIZE * cellWidth;
 }
 
-inline std::vector<torch::Tensor> env::reset(const robosim::envcontroller::EnvController &env)
+std::vector<torch::Tensor> env::reset(const robosim::envcontroller::EnvController &env)
 {
     std::vector<torch::Tensor> obs;
 
@@ -52,7 +52,9 @@ inline std::vector<torch::Tensor> env::reset(const robosim::envcontroller::EnvCo
 
         auto prey = std::dynamic_pointer_cast<prey::Prey>(agent);
         if (!prey)
+        {
             obs.push_back(agent->getObservation(env.getRobots(), env.getCellWidth()));
+        }
     }
 
     return obs;
@@ -71,14 +73,15 @@ env::State env::step(std::vector<float> actions,
     {
         auto agent = std::static_pointer_cast<agent::Agent>(robots[i]);
 
-        threads.push_back(std::thread(&agent::Agent::executeAction, agent, action::getActionFromIndex(actions[i])));
+        threads.push_back(std::thread(&agent::Agent::executeAction, agent, action::getActionFromIndex(actions[i]),
+                                      robots, cellWidth));
     }
 
     // block and allows robots to execute actions at the same time
     for (std::thread &th : threads)
     {
-        if (th.joinable())
-            th.join();
+        // if (th.joinable())
+        th.join();
     }
 
     for (size_t i = 0; i < env::hunterCount; i++)

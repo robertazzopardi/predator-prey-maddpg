@@ -9,7 +9,6 @@
 #include <random>
 #include <robosim/RobotMonitor.h>
 #include <torch/nn/modules/loss.h>
-#include <tuple>
 #include <vector>
 
 namespace at
@@ -45,9 +44,6 @@ struct Critic;
 namespace agent
 {
 
-// using UpdateData =
-//     std::tuple<std::vector<float>, std::vector<at::Tensor>, std::array<at::Tensor, env::BATCH_SIZE>,
-//                std::array<at::Tensor, env::BATCH_SIZE>, std::array<at::Tensor, env::BATCH_SIZE>, at::Tensor>;
 struct UpdateData
 {
     std::vector<float> indivRewardBatchI;

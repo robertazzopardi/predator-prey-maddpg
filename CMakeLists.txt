@@ -35,7 +35,7 @@ target_compile_options(
 
 # Link
 add_subdirectory(lib/robosimcpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE lib/robosim)
+target_link_libraries(${PROJECT_NAME} PRIVATE robosim)
 target_include_directories(${PROJECT_NAME} PRIVATE lib/robosimcpp/include)
 
 # torch

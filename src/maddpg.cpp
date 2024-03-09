@@ -15,7 +15,6 @@
 #include <stddef.h>
 #include <thread>
 #include <torch/csrc/autograd/generated/variable_factories.h>
-#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -87,6 +86,7 @@ void maddpg::run(uint32_t maxEpisodes, uint32_t maxSteps, const robosim::envcont
         uint32_t step = 0;
         for (; step < maxSteps; step++)
         {
+            std::cout << "running: " << env.isRunning() << std::endl;
             if (!env.isRunning())
                 return;
 

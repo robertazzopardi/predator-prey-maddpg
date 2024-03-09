@@ -13,7 +13,7 @@ int main(void)
     env.makeRobots<hunter::Hunter>(env::hunterCount, 50, colour::OFF_BLACK);
     env.makeRobots<prey::Prey>(env::preyCount, 50, colour::OFF_RED);
 
-    std::thread maddpg(maddpg::run, 500, 300);
+    std::thread maddpg(maddpg::run, 500, 300, env);
 
     // startSimulation();
     env.run();

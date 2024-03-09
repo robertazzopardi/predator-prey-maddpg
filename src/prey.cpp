@@ -3,6 +3,7 @@
 #include "env.h"
 #include "hunter.h"
 #include "replayBuffer.h"
+#include "robosim/RobotMonitor.h"
 #include <memory>
 #include <robosim/Colour.h>
 #include <robosim/EnvController.h>
@@ -69,6 +70,11 @@ bool prey::Prey::isTrapped(const std::vector<std::shared_ptr<robosim::robotmonit
 }
 
 float prey::Prey::getReward(action::Action)
+{
+    return 0.0f;
+}
+
+float prey::Prey::getReward(const std::vector<std::shared_ptr<robosim::robotmonitor::RobotMonitor>> &, float)
 {
     return 0.0f;
 }
